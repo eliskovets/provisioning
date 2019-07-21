@@ -37,14 +37,14 @@ module "provider" {
 module "swap" {
   source = "./service/swap"
 
-  count       = "${var.node_count}"
+  instance_count       = "${var.node_count}"
   connections = "${module.provider.public_ips}"
 }
 
 module "dns" {
   source = "./dns/cloudflare"
 
-  count      = "${var.node_count}"
+  instance_count      = "${var.node_count}"
   email      = "${var.cloudflare_email}"
   token      = "${var.cloudflare_token}"
   domain     = "${var.domain}"
@@ -90,7 +90,7 @@ module "dns" {
 module "wireguard" {
   source = "./security/wireguard"
 
-  count        = "${var.node_count}"
+  instance_count        = "${var.node_count}"
   connections  = "${module.provider.public_ips}"
   private_ips  = "${module.provider.private_ips}"
   hostnames    = "${module.provider.hostnames}"
@@ -100,7 +100,7 @@ module "wireguard" {
 module "firewall" {
   source = "./security/ufw"
 
-  count                = "${var.node_count}"
+  instance_count                = "${var.node_count}"
   connections          = "${module.provider.public_ips}"
   private_interface    = "${module.provider.private_network_interface}"
   vpn_interface        = "${module.wireguard.vpn_interface}"
@@ -111,7 +111,7 @@ module "firewall" {
 module "etcd" {
   source = "./service/etcd"
 
-  count       = "${var.etcd_node_count}"
+  instance_count       = "${var.etcd_node_count}"
   connections = "${module.provider.public_ips}"
   hostnames   = "${module.provider.hostnames}"
   vpn_unit    = "${module.wireguard.vpn_unit}"
@@ -121,7 +121,7 @@ module "etcd" {
 module "kubernetes" {
   source = "./service/kubernetes"
 
-  count          = "${var.node_count}"
+  instance_count          = "${var.node_count}"
   connections    = "${module.provider.public_ips}"
   cluster_name   = "${var.domain}"
   vpn_interface  = "${module.wireguard.vpn_interface}"

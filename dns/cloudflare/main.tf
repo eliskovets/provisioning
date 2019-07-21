@@ -1,4 +1,4 @@
-variable "count" {}
+variable "instance_count" {}
 
 variable "email" {}
 
@@ -20,7 +20,7 @@ provider "cloudflare" {
 }
 
 resource "cloudflare_record" "hosts" {
-  count = "${var.count}"
+  count = "${var.instance_count}"
 
   domain  = "${var.domain}"
   name    = "${element(var.hostnames, count.index)}"

@@ -25,7 +25,7 @@ variable "ssh_keys" {
 }
 
 provider "hcloud" {
-  token = "${var.token}"
+  token = var.token
 }
 
 variable "apt_packages" {
@@ -51,6 +51,25 @@ resource "hcloud_server" "host" {
   }
 }
 
+resource "hcloud_network" "private" {
+  name = "private-net"
+  ip_range = "10.0.0.0/8"
+}
+
+resource "hcloud_network_subnet" "main-subnet" {
+  network_id = hcloud_network.private.id
+  type = "server"
+  network_zone = "eu-central"
+  ip_range = "10.0.1.0/24"
+}
+
+resource "hcloud_server_network" "private-ip" {
+  count = var.hosts
+  server_id = hcloud_server.host.*.id[count.index]
+  network_id = hcloud_network.private.id
+  ip = cidrhost(hcloud_network_subnet.main-subnet.ip_range, count.index+1)
+}
+
 output "hostnames" {
   value = ["${hcloud_server.host.*.name}"]
 }
@@ -60,7 +79,7 @@ output "public_ips" {
 }
 
 output "private_ips" {
-  value = ["${hcloud_server.host.*.ipv4_address}"]
+  value = ["${hcloud_server_network.private-ip.*.ip}"]
 }
 
 output "private_network_interface" {

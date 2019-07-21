@@ -1,4 +1,4 @@
-variable "count" {}
+variable "instance_count" {}
 
 variable "connections" {
   type = "list"
@@ -21,7 +21,7 @@ variable "kubernetes_interface" {
 }
 
 resource "null_resource" "firewall" {
-  count = "${var.count}"
+  count = "${var.instance_count}"
 
   triggers = {
     template = "${data.template_file.ufw.rendered}"
@@ -43,7 +43,7 @@ EOF
 data "template_file" "ufw" {
   template = "${file("${path.module}/scripts/ufw.sh")}"
 
-  vars {
+  vars = {
     private_interface    = "${var.private_interface}"
     kubernetes_interface = "${var.kubernetes_interface}"
     vpn_interface        = "${var.vpn_interface}"

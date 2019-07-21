@@ -1,4 +1,4 @@
-variable "count" {}
+variable "instance_count" {}
 
 variable "project" {}
 
@@ -25,7 +25,7 @@ provider "google" {
 }
 
 resource "google_dns_record_set" "hosts" {
-  count = "${var.count}"
+  count = "${var.instance_count}"
 
   name         = "${element(var.hostnames, count.index)}.${var.domain}."
   type         = "A"

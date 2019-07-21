@@ -1,4 +1,4 @@
-variable "count" {}
+variable "instance_count" {}
 
 variable "connections" {
   type = "list"
@@ -41,7 +41,7 @@ locals {
 }
 
 resource "null_resource" "kubernetes" {
-  count = "${var.count}"
+  count = "${var.instance_count}"
 
   connection {
     host  = "${element(var.connections, count.index)}"
@@ -86,7 +86,7 @@ EOF
 data "template_file" "master-configuration" {
   template = "${file("${path.module}/templates/master-configuration.yml")}"
 
-  vars {
+  vars = {
     api_advertise_addresses = "${element(var.vpn_ips, 0)}"
     etcd_endpoints          = "- ${join("\n    - ", var.etcd_endpoints)}"
     cert_sans               = "- ${element(var.connections, 0)}"
@@ -96,7 +96,7 @@ data "template_file" "master-configuration" {
 data "template_file" "master" {
   template = "${file("${path.module}/scripts/master.sh")}"
 
-  vars {
+  vars = {
     token = "${local.cluster_token}"
   }
 }
@@ -104,17 +104,17 @@ data "template_file" "master" {
 data "template_file" "slave" {
   template = "${file("${path.module}/scripts/slave.sh")}"
 
-  vars {
+  vars = {
     master_ip = "${element(var.vpn_ips, 0)}"
     token     = "${local.cluster_token}"
   }
 }
 
 data "template_file" "install" {
-  count    = "${var.count}"
+  count    = "${var.instance_count}"
   template = "${file("${path.module}/scripts/install.sh")}"
 
-  vars {
+  vars = {
     vpn_interface = "${var.vpn_interface}"
     vpn_ip        = "${element(var.vpn_ips, count.index)}"
     overlay_cidr  = "${var.overlay_cidr}"
