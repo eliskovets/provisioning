@@ -24,12 +24,12 @@ resource "null_resource" "firewall" {
   count = "${var.instance_count}"
 
   triggers = {
-    template = "${data.template_file.ufw.rendered}"
+    template = data.template_file.ufw.rendered
   }
 
   connection {
-    host  = "${element(var.connections, count.index)}"
-    user  = "root"
+    host = "${element(var.connections, count.index)}"
+    user = "root"
     agent = true
   }
 
@@ -44,9 +44,9 @@ data "template_file" "ufw" {
   template = "${file("${path.module}/scripts/ufw.sh")}"
 
   vars = {
-    private_interface    = "${var.private_interface}"
+    private_interface = "${var.private_interface}"
     kubernetes_interface = "${var.kubernetes_interface}"
-    vpn_interface        = "${var.vpn_interface}"
-    vpn_port             = "${var.vpn_port}"
+    vpn_interface = "${var.vpn_interface}"
+    vpn_port = "${var.vpn_port}"
   }
 }

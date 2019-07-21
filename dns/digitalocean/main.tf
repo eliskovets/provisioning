@@ -20,30 +20,32 @@ resource "digitalocean_record" "hosts" {
   count = "${var.instance_count}"
 
   domain = "${var.domain}"
-  name   = "${element(var.hostnames, count.index)}"
-  value  = "${element(var.public_ips, count.index)}"
-  type   = "A"
-  ttl    = 300
+  name = "${element(var.hostnames, count.index)}"
+  value = "${element(var.public_ips, count.index)}"
+  type = "A"
+  ttl = 300
 }
 
 resource "digitalocean_record" "domain" {
   domain = "${var.domain}"
-  name   = "@"
-  value  = "${element(var.public_ips, 0)}"
-  type   = "A"
-  ttl    = 300
+  name = "@"
+  value = "${element(var.public_ips, 0)}"
+  type = "A"
+  ttl = 300
 }
 
 resource "digitalocean_record" "wildcard" {
-  depends_on = ["digitalocean_record.domain"]
+  depends_on = [
+    "digitalocean_record.domain"]
 
   domain = "${var.domain}"
-  name   = "*.${var.domain}."
-  value  = "@"
-  type   = "CNAME"
-  ttl    = 300
+  name = "*.${var.domain}."
+  value = "@"
+  type = "CNAME"
+  ttl = 300
 }
 
 output "domains" {
-  value = ["${digitalocean_record.hosts.*.fqdn}"]
+  value = [
+    "${digitalocean_record.hosts.*.fqdn}"]
 }

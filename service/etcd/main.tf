@@ -17,8 +17,8 @@ variable "vpn_ips" {
 }
 
 locals {
-  etcd_hostnames   = "${slice(var.hostnames, 0, var.instance_count)}"
-  etcd_vpn_ips     = "${slice(var.vpn_ips, 0, var.instance_count)}"
+  etcd_hostnames = "${slice(var.hostnames, 0, var.instance_count)}"
+  etcd_vpn_ips = "${slice(var.vpn_ips, 0, var.instance_count)}"
 }
 
 variable "etcd_version" {
@@ -33,8 +33,8 @@ resource "null_resource" "etcd" {
   }
 
   connection {
-    host  = "${element(var.connections, count.index)}"
-    user  = "root"
+    host = "${element(var.connections, count.index)}"
+    user = "root"
     agent = true
   }
 
@@ -45,7 +45,7 @@ EOF
   }
 
   provisioner "file" {
-    content     = "${element(data.template_file.etcd-service.*.rendered, count.index)}"
+    content = "${element(data.template_file.etcd-service.*.rendered, count.index)}"
     destination = "/etc/systemd/system/etcd.service"
   }
 
@@ -59,16 +59,16 @@ EOF
 }
 
 data "template_file" "etcd-service" {
-  count    = "${var.instance_count}"
+  count = "${var.instance_count}"
   template = "${file("${path.module}/templates/etcd.service")}"
 
   vars = {
-    hostname              = "${element(local.etcd_hostnames, count.index)}"
-    intial_cluster        = "${join(",", formatlist("%s=http://%s:2380", local.etcd_hostnames, local.etcd_vpn_ips))}"
-    listen_client_urls    = "http://${element(local.etcd_vpn_ips, count.index)}:2379"
+    hostname = "${element(local.etcd_hostnames, count.index)}"
+    intial_cluster = "${join(",", formatlist("%s=http://%s:2380", local.etcd_hostnames, local.etcd_vpn_ips))}"
+    listen_client_urls = "http://${element(local.etcd_vpn_ips, count.index)}:2379"
     advertise_client_urls = "http://${element(local.etcd_vpn_ips, count.index)}:2379"
-    listen_peer_urls      = "http://${element(local.etcd_vpn_ips, count.index)}:2380"
-    vpn_unit              = "${var.vpn_unit}"
+    listen_peer_urls = "http://${element(local.etcd_vpn_ips, count.index)}:2380"
+    vpn_unit = "${var.vpn_unit}"
   }
 }
 
@@ -81,7 +81,8 @@ data "template_file" "install" {
 }
 
 data "null_data_source" "endpoints" {
-  depends_on = ["null_resource.etcd"]
+  depends_on = [
+    "null_resource.etcd"]
 
   inputs = {
     list = "${join(",", formatlist("http://%s:2379", local.etcd_vpn_ips))}"
@@ -89,5 +90,6 @@ data "null_data_source" "endpoints" {
 }
 
 output "endpoints" {
-  value = ["${split(",", data.null_data_source.endpoints.outputs["list"])}"]
+  value = [
+    "${split(",", data.null_data_source.endpoints.outputs["list"])}"]
 }

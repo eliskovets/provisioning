@@ -23,7 +23,7 @@ variable "image" {
 }
 
 variable "apt_packages" {
-  type    = "list"
+  type = "list"
   default = []
 }
 
@@ -33,15 +33,15 @@ variable "apt_packages" {
 
 provider "scaleway" {
   organization = "${var.organization}"
-  token        = "${var.token}"
-  region       = "${var.region}"
+  token = "${var.token}"
+  region = "${var.region}"
 }
 
 resource "scaleway_server" "host" {
-  name                = "${format(var.hostname_format, count.index + 1)}"
-  type                = "${var.type}"
-  image               = "${data.scaleway_image.image.id}"
-  bootscript          = "${data.scaleway_bootscript.bootscript.id}"
+  name = "${format(var.hostname_format, count.index + 1)}"
+  type = "${var.type}"
+  image = "${data.scaleway_image.image.id}"
+  bootscript = "${data.scaleway_bootscript.bootscript.id}"
   dynamic_ip_required = true
 
   count = "${var.hosts}"
@@ -61,24 +61,27 @@ resource "scaleway_server" "host" {
 
 data "scaleway_image" "image" {
   architecture = "x86_64"
-  name         = "${var.image}"
+  name = "${var.image}"
 }
 
 data "scaleway_bootscript" "bootscript" {
   architecture = "x86_64"
-  name_filter  = "mainline 4.15.11 rev1"
+  name_filter = "mainline 4.15.11 rev1"
 }
 
 output "hostnames" {
-  value = ["${scaleway_server.host.*.name}"]
+  value = [
+    "${scaleway_server.host.*.name}"]
 }
 
 output "public_ips" {
-  value = ["${scaleway_server.host.*.public_ip}"]
+  value = [
+    "${scaleway_server.host.*.public_ip}"]
 }
 
 output "private_ips" {
-  value = ["${scaleway_server.host.*.private_ip}"]
+  value = [
+    "${scaleway_server.host.*.private_ip}"]
 }
 
 output "private_network_interface" {

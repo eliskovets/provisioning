@@ -17,9 +17,7 @@ variable "hostname_format" {
 }
 
 /* hcloud */
-variable "hcloud_token" {
-  default = ""
-}
+variable "hcloud_token" {}
 
 variable "hcloud_ssh_keys" {
   default = []

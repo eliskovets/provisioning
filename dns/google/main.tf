@@ -20,38 +20,43 @@ variable "public_ips" {
 
 provider "google" {
   credentials = "${file(var.creds_file)}"
-  project     = "${var.project}"
-  region      = "${var.region}"
+  project = "${var.project}"
+  region = "${var.region}"
 }
 
 resource "google_dns_record_set" "hosts" {
   count = "${var.instance_count}"
 
-  name         = "${element(var.hostnames, count.index)}.${var.domain}."
-  type         = "A"
-  ttl          = 300
+  name = "${element(var.hostnames, count.index)}.${var.domain}."
+  type = "A"
+  ttl = 300
   managed_zone = "${var.managed_zone}"
-  rrdatas      = ["${element(var.public_ips, count.index)}"]
+  rrdatas = [
+    "${element(var.public_ips, count.index)}"]
 }
 
 resource "google_dns_record_set" "domain" {
-  name         = "${var.domain}."
-  type         = "A"
-  ttl          = 300
+  name = "${var.domain}."
+  type = "A"
+  ttl = 300
   managed_zone = "${var.managed_zone}"
-  rrdatas      = ["${element(var.public_ips, 0)}"]
+  rrdatas = [
+    "${element(var.public_ips, 0)}"]
 }
 
 resource "google_dns_record_set" "wildcard" {
-  depends_on = ["google_dns_record_set.domain"]
+  depends_on = [
+    "google_dns_record_set.domain"]
 
-  name         = "*.${var.domain}."
-  type         = "CNAME"
-  ttl          = 300
+  name = "*.${var.domain}."
+  type = "CNAME"
+  ttl = 300
   managed_zone = "${var.managed_zone}"
-  rrdatas      = ["${var.domain}."]
+  rrdatas = [
+    "${var.domain}."]
 }
 
 output "domains" {
-  value = ["${google_dns_record_set.hosts.*.name}"]
+  value = [
+    "${google_dns_record_set.hosts.*.name}"]
 }

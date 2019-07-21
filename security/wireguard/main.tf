@@ -31,13 +31,13 @@ variable "vpn_iprange" {
 resource "null_resource" "wireguard" {
   count = "${var.instance_count}"
 
-  triggers {
+  triggers = {
     count = "${var.instance_count}"
   }
 
   connection {
-    host  = "${element(var.connections, count.index)}"
-    user  = "root"
+    host = "${element(var.connections, count.index)}"
+    user = "root"
     agent = true
   }
 
@@ -67,7 +67,7 @@ resource "null_resource" "wireguard" {
   }
 
   provisioner "file" {
-    content     = "${element(data.template_file.interface-conf.*.rendered, count.index)}"
+    content = "${element(data.template_file.interface-conf.*.rendered, count.index)}"
     destination = "/etc/wireguard/${var.vpn_interface}.conf"
   }
 
@@ -87,7 +87,7 @@ resource "null_resource" "wireguard" {
   }
 
   provisioner "file" {
-    content     = "${element(data.template_file.overlay-route-service.*.rendered, count.index)}"
+    content = "${element(data.template_file.overlay-route-service.*.rendered, count.index)}"
     destination = "/etc/systemd/system/overlay-route.service"
   }
 
@@ -101,35 +101,35 @@ resource "null_resource" "wireguard" {
 }
 
 data "template_file" "interface-conf" {
-  count    = "${var.instance_count}"
+  count = "${var.instance_count}"
   template = "${file("${path.module}/templates/interface.conf")}"
 
   vars = {
-    address     = "${element(data.template_file.vpn_ips.*.rendered, count.index)}"
-    port        = "${var.vpn_port}"
+    address = "${element(data.template_file.vpn_ips.*.rendered, count.index)}"
+    port = "${var.vpn_port}"
     private_key = "${element(data.external.keys.*.result.private_key, count.index)}"
-    peers       = "${replace(join("\n", data.template_file.peer-conf.*.rendered), element(data.template_file.peer-conf.*.rendered, count.index), "")}"
+    peers = "${replace(join("\n", data.template_file.peer-conf.*.rendered), element(data.template_file.peer-conf.*.rendered, count.index), "")}"
   }
 }
 
 data "template_file" "peer-conf" {
-  count    = "${var.instance_count}"
+  count = "${var.instance_count}"
   template = "${file("${path.module}/templates/peer.conf")}"
 
   vars = {
-    endpoint    = "${element(var.private_ips, count.index)}"
-    port        = "${var.vpn_port}"
-    public_key  = "${element(data.external.keys.*.result.public_key, count.index)}"
+    endpoint = "${element(var.private_ips, count.index)}"
+    port = "${var.vpn_port}"
+    public_key = "${element(data.external.keys.*.result.public_key, count.index)}"
     allowed_ips = "${element(data.template_file.vpn_ips.*.rendered, count.index)}/32"
   }
 }
 
 data "template_file" "overlay-route-service" {
-  count    = "${var.instance_count}"
+  count = "${var.instance_count}"
   template = "${file("${path.module}/templates/overlay-route.service")}"
 
   vars = {
-    address      = "${element(data.template_file.vpn_ips.*.rendered, count.index)}"
+    address = "${element(data.template_file.vpn_ips.*.rendered, count.index)}"
     overlay_cidr = "${var.overlay_cidr}"
   }
 }
@@ -137,11 +137,13 @@ data "template_file" "overlay-route-service" {
 data "external" "keys" {
   count = "${var.instance_count}"
 
-  program = ["sh", "${path.module}/scripts/gen_keys.sh"]
+  program = [
+    "sh",
+    "${path.module}/scripts/gen_keys.sh"]
 }
 
 data "template_file" "vpn_ips" {
-  count    = "${var.instance_count}"
+  count = "${var.instance_count}"
   template = "$${ip}"
 
   vars = {
@@ -150,13 +152,16 @@ data "template_file" "vpn_ips" {
 }
 
 output "vpn_ips" {
-  depends_on = ["null_resource.wireguard"]
-  value      = ["${data.template_file.vpn_ips.*.rendered}"]
+  depends_on = [
+    "null_resource.wireguard"]
+  value = [
+    "${data.template_file.vpn_ips.*.rendered}"]
 }
 
 output "vpn_unit" {
-  depends_on = ["null_resource.wireguard"]
-  value      = "wg-quick@${var.vpn_interface}.service"
+  depends_on = [
+    "null_resource.wireguard"]
+  value = "wg-quick@${var.vpn_interface}.service"
 }
 
 output "vpn_interface" {

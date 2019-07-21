@@ -25,14 +25,14 @@ variable "overlay_cidr" {
 }
 
 resource "random_string" "token1" {
-  length  = 6
-  upper   = false
+  length = 6
+  upper = false
   special = false
 }
 
 resource "random_string" "token2" {
-  length  = 16
-  upper   = false
+  length = 16
+  upper = false
   special = false
 }
 
@@ -44,8 +44,8 @@ resource "null_resource" "kubernetes" {
   count = "${var.instance_count}"
 
   connection {
-    host  = "${element(var.connections, count.index)}"
-    user  = "root"
+    host = "${element(var.connections, count.index)}"
+    user = "root"
     agent = true
   }
 
@@ -57,16 +57,17 @@ resource "null_resource" "kubernetes" {
   }
 
   provisioner "remote-exec" {
-    inline = ["[ -d /etc/systemd/system/docker.service.d ] || mkdir -p /etc/systemd/system/docker.service.d"]
+    inline = [
+      "[ -d /etc/systemd/system/docker.service.d ] || mkdir -p /etc/systemd/system/docker.service.d"]
   }
 
   provisioner "file" {
-    content     = "${file("${path.module}/templates/10-docker-opts.conf")}"
+    content = "${file("${path.module}/templates/10-docker-opts.conf")}"
     destination = "/etc/systemd/system/docker.service.d/10-docker-opts.conf"
   }
 
   provisioner "file" {
-    content     = "${data.template_file.master-configuration.rendered}"
+    content = "${data.template_file.master-configuration.rendered}"
     destination = "/tmp/master-configuration.yml"
   }
 
@@ -88,8 +89,8 @@ data "template_file" "master-configuration" {
 
   vars = {
     api_advertise_addresses = "${element(var.vpn_ips, 0)}"
-    etcd_endpoints          = "- ${join("\n    - ", var.etcd_endpoints)}"
-    cert_sans               = "- ${element(var.connections, 0)}"
+    etcd_endpoints = "- ${join("\n    - ", var.etcd_endpoints)}"
+    cert_sans = "- ${element(var.connections, 0)}"
   }
 }
 
@@ -106,18 +107,18 @@ data "template_file" "slave" {
 
   vars = {
     master_ip = "${element(var.vpn_ips, 0)}"
-    token     = "${local.cluster_token}"
+    token = "${local.cluster_token}"
   }
 }
 
 data "template_file" "install" {
-  count    = "${var.instance_count}"
+  count = "${var.instance_count}"
   template = "${file("${path.module}/scripts/install.sh")}"
 
   vars = {
     vpn_interface = "${var.vpn_interface}"
-    vpn_ip        = "${element(var.vpn_ips, count.index)}"
-    overlay_cidr  = "${var.overlay_cidr}"
+    vpn_ip = "${element(var.vpn_ips, count.index)}"
+    overlay_cidr = "${var.overlay_cidr}"
   }
 }
 

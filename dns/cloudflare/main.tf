@@ -22,31 +22,33 @@ provider "cloudflare" {
 resource "cloudflare_record" "hosts" {
   count = "${var.instance_count}"
 
-  domain  = "${var.domain}"
-  name    = "${element(var.hostnames, count.index)}"
-  value   = "${element(var.public_ips, count.index)}"
-  type    = "A"
+  domain = "${var.domain}"
+  name = "${element(var.hostnames, count.index)}"
+  value = "${element(var.public_ips, count.index)}"
+  type = "A"
   proxied = false
 }
 
 resource "cloudflare_record" "domain" {
-  domain  = "${var.domain}"
-  name    = "${var.domain}"
-  value   = "${element(var.public_ips, 0)}"
-  type    = "A"
+  domain = "${var.domain}"
+  name = "${var.domain}"
+  value = "${element(var.public_ips, 0)}"
+  type = "A"
   proxied = true
 }
 
 resource "cloudflare_record" "wildcard" {
-  depends_on = ["cloudflare_record.domain"]
+  depends_on = [
+    "cloudflare_record.domain"]
 
-  domain  = "${var.domain}"
-  name    = "*"
-  value   = "${var.domain}"
-  type    = "CNAME"
+  domain = "${var.domain}"
+  name = "*"
+  value = "${var.domain}"
+  type = "CNAME"
   proxied = false
 }
 
 output "domains" {
-  value = ["${cloudflare_record.hosts.*.hostname}"]
+  value = [
+    "${cloudflare_record.hosts.*.hostname}"]
 }
